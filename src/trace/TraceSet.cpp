@@ -53,10 +53,47 @@ TraceSet::TraceSet()
     _btIter = ::bt_ctf_get_iter(_btCtfIter);
 }
 
+TraceSet::TraceSet(TraceSet &&other) : 
+    _tracesInfos(std::move(other._tracesInfos)),
+    _btCtx(std::move(other._btCtx)),
+    _btIter(std::move(other._btIter)),
+    _btCtfIter(std::move(other._btCtfIter))
+{
+    other._btCtx = nullptr;
+    other._btIter = nullptr;
+    other._btCtfIter = nullptr;
+}
+
+TraceSet& TraceSet::operator=(TraceSet &&other) {
+    if (this != &other) {
+        if (_btCtfIter != nullptr) {
+            ::bt_ctf_iter_destroy(_btCtfIter);
+        }
+        if (_btCtx != nullptr) {
+            ::bt_context_put(_btCtx);
+        }
+        _tracesInfos = std::move(other._tracesInfos);
+
+        _btCtx = std::move(other._btCtx);
+        other._btCtx = nullptr;
+
+        _btIter = std::move(other._btIter);
+        other._btIter = nullptr;
+
+        _btCtfIter = std::move(other._btCtfIter);
+        other._btCtfIter = nullptr;
+    }
+    return *this;
+}
+
 TraceSet::~TraceSet()
 {
-    ::bt_ctf_iter_destroy(_btCtfIter);
-    ::bt_context_put(_btCtx);
+    if (_btCtfIter != nullptr) {
+        ::bt_ctf_iter_destroy(_btCtfIter);
+    }
+    if (_btCtx != nullptr) {
+        ::bt_context_put(_btCtx);
+    }
 }
 
 void TraceSet::seekBegin() const
@@ -66,6 +103,28 @@ void TraceSet::seekBegin() const
     beginPos.u.seek_time = 0;
 
     ::bt_iter_set_pos(_btIter, &beginPos);
+}
+
+void TraceSet::seekBetween(timestamp_t *start, timestamp_t *finish)
+{
+    if (start == nullptr) {
+        _btBeginPos.type = ::BT_SEEK_BEGIN;
+        _btBeginPos.u.seek_time = 0;
+    } else {
+        _btBeginPos.type = ::BT_SEEK_TIME;
+        _btBeginPos.u.seek_time = *start;
+    }
+
+    if (finish == nullptr) {
+        _btEndPos.type = ::BT_SEEK_LAST;
+        _btEndPos.u.seek_time = 0;
+    } else {
+        _btEndPos.type = ::BT_SEEK_TIME;
+        _btEndPos.u.seek_time = *finish;
+    }
+
+    ::bt_ctf_iter_destroy(_btCtfIter);
+    _btCtfIter = ::bt_ctf_iter_create(_btCtx, &_btBeginPos, &_btEndPos);
 }
 
 std::unique_ptr<FieldInfos> TraceSet::getFieldInfos(const ::tibee_bt_declaration* tibeeBtDecl,
@@ -368,6 +427,13 @@ timestamp_t TraceSet::getEnd() const
     return static_cast<timestamp_t>(ts);
 }
 
+
+TraceSet::Iterator TraceSet::between(timestamp_t *start, timestamp_t *finish)
+{
+    this->seekBetween(start, finish);
+
+    return TraceSet::Iterator {_btCtfIter};
+}
 
 TraceSet::Iterator TraceSet::begin() const
 {

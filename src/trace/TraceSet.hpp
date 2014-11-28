@@ -58,6 +58,13 @@ public:
      */
     TraceSet();
 
+    /**
+     * Move a trace set.
+     */
+    TraceSet(TraceSet &&other);
+
+    TraceSet& operator=(TraceSet &&other);
+
     virtual ~TraceSet();
 
     /**
@@ -81,6 +88,15 @@ public:
      * @returns End timestamp of the set
      */
     timestamp_t getEnd() const;
+
+    /**
+     * Returns an iterator pointing to the first event after the
+     * specified start timestamp, and ending at the event before
+     * the specified finish timestamp.
+     *
+     * @returns Iterator pointing to the first event after the start
+     */
+    Iterator between(timestamp_t *start, timestamp_t *finish);
 
     /**
      * Returns an iterator pointing to the first event of the set.
@@ -108,6 +124,7 @@ public:
 
 private:
     void seekBegin() const;
+    void seekBetween(timestamp_t *start, timestamp_t *finish);
     static std::unique_ptr<TraceInfos::EventMap> getEventMap(::bt_ctf_event_decl* const* eventDeclList,
                                                              unsigned int count);
     static std::unique_ptr<EventInfos> getEventInfos(const ::tibee_bt_ctf_event_decl* tibeeBtCtfEventDecl,
@@ -122,6 +139,8 @@ private:
     ::bt_context* _btCtx;
     ::bt_iter* _btIter;
     ::bt_ctf_iter* _btCtfIter;
+    ::bt_iter_pos _btBeginPos;
+    ::bt_iter_pos _btEndPos;
 };
 
 }  // namespace trace
