@@ -3,4 +3,4 @@
 	url = https://github.com/eepp/libdelorean
 [submodule "contrib/babeltrace"]
 	path = contrib/babeltrace
-	url = git://git.efficios.com/babeltrace.git
+	url = git@github.com:TheZorg/babeltrace.git
