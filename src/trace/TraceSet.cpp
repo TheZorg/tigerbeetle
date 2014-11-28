@@ -105,7 +105,7 @@ void TraceSet::seekBegin() const
     ::bt_iter_set_pos(_btIter, &beginPos);
 }
 
-void TraceSet::seekBetween(timestamp_t *start, timestamp_t *finish)
+void TraceSet::seekBetween(const timestamp_t *start, const timestamp_t *finish)
 {
     if (start == nullptr) {
         _btBeginPos.type = ::BT_SEEK_BEGIN;
@@ -428,7 +428,7 @@ timestamp_t TraceSet::getEnd() const
 }
 
 
-TraceSet::Iterator TraceSet::between(timestamp_t *start, timestamp_t *finish)
+TraceSet::Iterator TraceSet::between(const timestamp_t *start, const timestamp_t *finish)
 {
     this->seekBetween(start, finish);
 

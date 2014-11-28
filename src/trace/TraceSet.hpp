@@ -96,7 +96,7 @@ public:
      *
      * @returns Iterator pointing to the first event after the start
      */
-    Iterator between(timestamp_t *start, timestamp_t *finish);
+    Iterator between(const timestamp_t *start, const timestamp_t *finish);
 
     /**
      * Returns an iterator pointing to the first event of the set.
@@ -124,7 +124,7 @@ public:
 
 private:
     void seekBegin() const;
-    void seekBetween(timestamp_t *start, timestamp_t *finish);
+    void seekBetween(const timestamp_t *start, const timestamp_t *finish);
     static std::unique_ptr<TraceInfos::EventMap> getEventMap(::bt_ctf_event_decl* const* eventDeclList,
                                                              unsigned int count);
     static std::unique_ptr<EventInfos> getEventInfos(const ::tibee_bt_ctf_event_decl* tibeeBtCtfEventDecl,
