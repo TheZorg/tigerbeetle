@@ -52,12 +52,15 @@ class TraceSetIterator :
     public std::iterator<std::input_iterator_tag, value::Value>
 {
 public:
-    TraceSetIterator(::bt_ctf_iter* btCtfIter);
-    TraceSetIterator(const TraceSetIterator& it);
+    TraceSetIterator();
+    TraceSetIterator(bt_context* ctx, const timestamp_t *start, const timestamp_t *finish);
+    TraceSetIterator(TraceSetIterator&& it);
+    TraceSetIterator(const TraceSetIterator& it) = delete;
 
     virtual ~TraceSetIterator();
 
-    TraceSetIterator& operator=(const TraceSetIterator& rhs);
+    TraceSetIterator& operator=(const TraceSetIterator& rhs) = delete;
+    TraceSetIterator& operator=(TraceSetIterator&& rhs);
     TraceSetIterator& operator++();
     bool operator==(const TraceSetIterator& rhs);
     bool operator!=(const TraceSetIterator& rhs);
@@ -89,6 +92,9 @@ private:
 
     // the value factory used by this iterator and its event
     EventValueFactory _valueFactory;
+
+    ::bt_iter_pos _btBeginPos;
+    ::bt_iter_pos _btEndPos;
 };
 
 }

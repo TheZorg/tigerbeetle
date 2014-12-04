@@ -66,12 +66,12 @@ TraceSet::TraceSet(TraceSet &&other) :
 
 TraceSet& TraceSet::operator=(TraceSet &&other) {
     if (this != &other) {
-        if (_btCtfIter != nullptr) {
-            ::bt_ctf_iter_destroy(_btCtfIter);
-        }
-        if (_btCtx != nullptr) {
-            ::bt_context_put(_btCtx);
-        }
+//        if (_btCtfIter != nullptr) {
+//            ::bt_ctf_iter_destroy(_btCtfIter);
+//        }
+//        if (_btCtx != nullptr) {
+//            ::bt_context_put(_btCtx);
+//        }
         _tracesInfos = std::move(other._tracesInfos);
 
         _btCtx = std::move(other._btCtx);
@@ -103,28 +103,6 @@ void TraceSet::seekBegin() const
     beginPos.u.seek_time = 0;
 
     ::bt_iter_set_pos(_btIter, &beginPos);
-}
-
-void TraceSet::seekBetween(const timestamp_t *start, const timestamp_t *finish)
-{
-    if (start == nullptr) {
-        _btBeginPos.type = ::BT_SEEK_BEGIN;
-        _btBeginPos.u.seek_time = 0;
-    } else {
-        _btBeginPos.type = ::BT_SEEK_TIME;
-        _btBeginPos.u.seek_time = *start;
-    }
-
-    if (finish == nullptr) {
-        _btEndPos.type = ::BT_SEEK_LAST;
-        _btEndPos.u.seek_time = 0;
-    } else {
-        _btEndPos.type = ::BT_SEEK_TIME;
-        _btEndPos.u.seek_time = *finish;
-    }
-
-    ::bt_ctf_iter_destroy(_btCtfIter);
-    _btCtfIter = ::bt_ctf_iter_create(_btCtx, &_btBeginPos, &_btEndPos);
 }
 
 std::unique_ptr<FieldInfos> TraceSet::getFieldInfos(const ::tibee_bt_declaration* tibeeBtDecl,
@@ -430,25 +408,23 @@ timestamp_t TraceSet::getEnd() const
 
 TraceSet::Iterator TraceSet::between(const timestamp_t *start, const timestamp_t *finish)
 {
-    this->seekBetween(start, finish);
-
-    return TraceSet::Iterator {_btCtfIter};
+    return TraceSet::Iterator {_btCtx, start, finish};
 }
 
 TraceSet::Iterator TraceSet::begin() const
 {
     // go back to beginning (will also affect all existing iterators)
-    this->seekBegin();
+//    this->seekBegin();
 
     // create new iterator
-    return TraceSet::Iterator {_btCtfIter};
+    return TraceSet::Iterator {_btCtx, NULL, NULL};
 }
 
 
 TraceSet::Iterator TraceSet::end() const
 {
     // "end" is just a null iterator
-    return TraceSet::Iterator {nullptr};
+    return TraceSet::Iterator {};
 }
 
 }

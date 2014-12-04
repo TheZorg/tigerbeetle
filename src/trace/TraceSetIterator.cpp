@@ -25,13 +25,33 @@ namespace tibee
 namespace trace
 {
 
-TraceSetIterator::TraceSetIterator(::bt_ctf_iter* btCtfIter) :
-    _btCtfIter {btCtfIter},
+TraceSetIterator::TraceSetIterator() :
+    _btCtfIter {nullptr},
     _btIter {nullptr}
 {
-    if (!_btCtfIter) {
-        return;
+}
+
+TraceSetIterator::TraceSetIterator(bt_context* ctx, const timestamp_t *start, const timestamp_t *finish) :
+    _btCtfIter {nullptr},
+    _btIter {nullptr}
+{
+    if (start == nullptr) {
+        _btBeginPos.type = ::BT_SEEK_BEGIN;
+        _btBeginPos.u.seek_time = 0;
+    } else {
+        _btBeginPos.type = ::BT_SEEK_TIME;
+        _btBeginPos.u.seek_time = *start;
     }
+
+    if (finish == nullptr) {
+        _btEndPos.type = ::BT_SEEK_LAST;
+        _btEndPos.u.seek_time = 0;
+    } else {
+        _btEndPos.type = ::BT_SEEK_TIME;
+        _btEndPos.u.seek_time = *finish;
+    }
+
+    _btCtfIter = ::bt_ctf_iter_create(ctx, &_btBeginPos, &_btEndPos);
 
     _btIter = ::bt_ctf_get_iter(_btCtfIter);
 
@@ -54,27 +74,33 @@ TraceSetIterator::TraceSetIterator(::bt_ctf_iter* btCtfIter) :
     _event->setPrivateEvent(_btEvent);
 }
 
-TraceSetIterator::TraceSetIterator(const TraceSetIterator& it)
+TraceSetIterator::TraceSetIterator(TraceSetIterator &&it) :
+    _btCtfIter(std::move(it._btCtfIter)),
+    _btIter(std::move(it._btIter))
 {
-    // invoke assignment operator
-    *this = it;
+    it._btCtfIter = nullptr;
+    it._btIter = nullptr;
 }
 
 TraceSetIterator::~TraceSetIterator()
 {
-    // do not destroy BT iterator; not own by us
+    if (_btCtfIter != nullptr) {
+        ::bt_ctf_iter_destroy(_btCtfIter);
+    }
 }
 
-TraceSetIterator& TraceSetIterator::operator=(const TraceSetIterator& rhs)
+TraceSetIterator& TraceSetIterator::operator=(TraceSetIterator &&rhs)
 {
-    /* Simply copy the BT iterator here. The copied iterator will follow
-     * the original iterator since trace set iterators do not own their
-     * BT iterator.
-     */
-    _btIter = rhs._btIter;
-    _btCtfIter = rhs._btCtfIter;
-    _btEvent = rhs._btEvent;
+    if (this != &rhs) {
+//        if (_btCtfIter != nullptr) {
+//            ::bt_ctf_iter_destroy(_btCtfIter);
+//        }
+        _btIter = std::move(rhs._btIter);
+        rhs._btIter = nullptr;
 
+        _btCtfIter = std::move(rhs._btCtfIter);
+        rhs._btCtfIter = nullptr;
+    }
     return *this;
 }
 

@@ -124,7 +124,6 @@ public:
 
 private:
     void seekBegin() const;
-    void seekBetween(const timestamp_t *start, const timestamp_t *finish);
     static std::unique_ptr<TraceInfos::EventMap> getEventMap(::bt_ctf_event_decl* const* eventDeclList,
                                                              unsigned int count);
     static std::unique_ptr<EventInfos> getEventInfos(const ::tibee_bt_ctf_event_decl* tibeeBtCtfEventDecl,
@@ -139,8 +138,6 @@ private:
     ::bt_context* _btCtx;
     ::bt_iter* _btIter;
     ::bt_ctf_iter* _btCtfIter;
-    ::bt_iter_pos _btBeginPos;
-    ::bt_iter_pos _btEndPos;
 };
 
 }  // namespace trace
