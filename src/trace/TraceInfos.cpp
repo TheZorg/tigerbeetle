@@ -26,11 +26,13 @@ namespace trace
 
 TraceInfos::TraceInfos(const bfs::path& path, trace_id_t id,
                        std::unique_ptr<TraceInfos::Environment> env,
-                       std::unique_ptr<TraceInfos::EventMap> eventMap) :
+                       std::unique_ptr<TraceInfos::EventMap> eventMap,
+                       ClockInfos clockInfos) :
     _path {path},
     _id {id},
     _env {std::move(env)},
-    _eventMap {std::move(eventMap)}
+    _eventMap {std::move(eventMap)},
+    _clockInfos(clockInfos)
 {
     _traceType = "unknown";
 

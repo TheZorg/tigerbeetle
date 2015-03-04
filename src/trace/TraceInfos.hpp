@@ -31,6 +31,13 @@ namespace tibee
 namespace trace
 {
 
+struct ClockInfos
+{
+	uint64_t offset;
+	uint64_t offset_s;
+	uint64_t freq;
+};
+
 /**
  * Informations about a specific trace.
  *
@@ -61,7 +68,8 @@ public:
      */
     TraceInfos(const boost::filesystem::path& path, trace_id_t id,
                std::unique_ptr<Environment> env,
-               std::unique_ptr<EventMap> eventMap);
+               std::unique_ptr<EventMap> eventMap,
+               ClockInfos clockInfos);
 
     /**
      * Returns the trace path.
@@ -115,12 +123,18 @@ public:
         return _traceType;
     }
 
+    const ClockInfos& getClockInfos() const
+    {
+    	return _clockInfos;
+    }
+
 private:
     boost::filesystem::path _path;
     trace_id_t _id;
     std::unique_ptr<Environment> _env;
     std::unique_ptr<EventMap> _eventMap;
     std::string _traceType;
+    ClockInfos _clockInfos;
 };
 
 std::ostream& operator<<(std::ostream& out, const TraceInfos& traceInfos);

@@ -266,6 +266,11 @@ bool TraceSet::addTraceToSet(const bfs::path& path, int traceHandle)
     auto firstEventDecl = eventDeclList[0];
     auto tibeeEventDecl = reinterpret_cast<const ::tibee_bt_ctf_event_decl*>(firstEventDecl);
     auto tibeeTraceEnv = tibeeEventDecl->parent.stream->trace->env;
+    auto clock = tibeeEventDecl->parent.stream->trace->parent.single_clock;
+    ClockInfos clockInfos;
+    clockInfos.offset = clock->offset;
+    clockInfos.offset_s = clock->offset_s;
+    clockInfos.freq = clock->freq;
 
     // fill environment map now
     if (std::strlen(tibeeTraceEnv.procname) > 0) {
@@ -305,7 +310,8 @@ bool TraceSet::addTraceToSet(const bfs::path& path, int traceHandle)
             path,
             static_cast<trace_id_t>(traceHandle),
             std::move(env),
-            std::move(eventMap)
+            std::move(eventMap),
+            clockInfos
         }
     };
 
