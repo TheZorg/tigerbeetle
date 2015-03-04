@@ -96,7 +96,7 @@ public:
      *
      * @returns Iterator pointing to the first event after the start
      */
-    Iterator between(const timestamp_t *start, const timestamp_t *finish);
+    Iterator between(const timestamp_t *start, const timestamp_t *finish) const;
 
     /**
      * Returns an iterator pointing to the first event of the set.

@@ -412,7 +412,7 @@ timestamp_t TraceSet::getEnd() const
 }
 
 
-TraceSet::Iterator TraceSet::between(const timestamp_t *start, const timestamp_t *finish)
+TraceSet::Iterator TraceSet::between(const timestamp_t *start, const timestamp_t *finish) const
 {
     return TraceSet::Iterator {_btCtx, start, finish};
 }
