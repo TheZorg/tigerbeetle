@@ -351,27 +351,16 @@ timestamp_t TraceSet::getBegin() const
         return -1;
     }
 
-    // save position (iterator might be shared)
-    auto savedPos = ::bt_iter_get_pos(_btIter);
-
-    // go to beginning
-    this->seekBegin();
-
-    // read event
-    auto event = bt_ctf_iter_read_event(_btCtfIter);
-
+    ::bt_ctf_iter *iter = ::bt_ctf_iter_create(_btCtx, NULL, NULL);
+    auto event = bt_ctf_iter_read_event(iter);
     if (!event) {
-        ::bt_iter_set_pos(_btIter, savedPos);
-        ::bt_iter_free_pos(savedPos);
         return -1;
     }
 
     // read event timestamp
     auto ts = ::bt_ctf_get_timestamp(event);
 
-    // restore saved position
-    ::bt_iter_set_pos(_btIter, savedPos);
-    ::bt_iter_free_pos(savedPos);
+    ::bt_ctf_iter_destroy(iter);
 
     return static_cast<timestamp_t>(ts);
 }
@@ -383,30 +372,19 @@ timestamp_t TraceSet::getEnd() const
         return -1;
     }
 
-    // save position (iterator might be shared)
-    auto savedPos = ::bt_iter_get_pos(_btIter);
-
-    // go to end
     ::bt_iter_pos endPos;
     endPos.type = ::BT_SEEK_LAST;
     endPos.u.seek_time = 0;
-    ::bt_iter_set_pos(_btIter, &endPos);
-
-    // read event
-    auto event = bt_ctf_iter_read_event(_btCtfIter);
-
+    ::bt_ctf_iter *iter = ::bt_ctf_iter_create(_btCtx, &endPos, NULL);
+    auto event = bt_ctf_iter_read_event(iter);
     if (!event) {
-        ::bt_iter_set_pos(_btIter, savedPos);
-        ::bt_iter_free_pos(savedPos);
         return -1;
     }
 
     // read event timestamp
     auto ts = ::bt_ctf_get_timestamp(event);
 
-    // restore saved position
-    ::bt_iter_set_pos(_btIter, savedPos);
-    ::bt_iter_free_pos(savedPos);
+    ::bt_ctf_iter_destroy(iter);
 
     return static_cast<timestamp_t>(ts);
 }
@@ -419,9 +397,6 @@ TraceSet::Iterator TraceSet::between(const timestamp_t *start, const timestamp_t
 
 TraceSet::Iterator TraceSet::begin() const
 {
-    // go back to beginning (will also affect all existing iterators)
-//    this->seekBegin();
-
     // create new iterator
     return TraceSet::Iterator {_btCtx, NULL, NULL};
 }
